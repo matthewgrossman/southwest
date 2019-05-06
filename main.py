@@ -1,16 +1,16 @@
-from enum import Enum
+from enum import Enum, auto
 from selenium import webdriver
 
 
 class Fields(Enum):
     # input fields
-    ConfirmationNum = 'confirmation_num'
-    FirstName = 'first_name'
-    LastName = 'last_name'
+    ConfirmationNum = auto()
+    FirstName = auto()
+    LastName = auto()
 
     # confirmation buttons
-    RetrieveRes = 'retrieve_res'
-    CheckIn = 'check_in'
+    RetrieveRes = auto()
+    CheckIn = auto()
 
 
 config = {
