@@ -19,7 +19,7 @@ config = {
     Fields.LastName: 'Grossman'
 }
 
-TEXT_TPL = '//buton[@name="{name}"]'
+TEXT_TPL = '//input[@name="{name}"]'
 BUTTON_TPL = '//button[@role="submit" and contains(., "{inner_html}")]'
 FIELD_XPATHS = {
     Fields.ConfirmationNum: TEXT_TPL.format(name="recordLocator"),
@@ -56,7 +56,7 @@ def check_in(driver: webdriver) -> None:
 
 if __name__ == '__main__':
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('headless')
+    # chrome_options.add_argument('headless')
     driver = webdriver.Chrome(chrome_options=chrome_options)
     driver.implicitly_wait(5)
     check_in(driver=driver)
