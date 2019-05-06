@@ -19,6 +19,8 @@ config = {
     Fields.LastName: 'Grossman'
 }
 
+
+# defined xpaths for each different element we need to find in-page
 TEXT_TPL = '//input[@name="{name}"]'
 BUTTON_TPL = '//button[@role="submit" and contains(., "{inner_html}")]'
 FIELD_XPATHS = {
