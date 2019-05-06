@@ -30,8 +30,11 @@ FIELD_XPATHS = {
 }
 
 
+URL = "https://mobile.southwest.com/check-in"
+
+
 def check_in(driver: webdriver) -> None:
-    driver.get("https://mobile.southwest.com/check-in")
+    driver.get(URL)
 
     # insert all data required on the check-in page
     for field in [
