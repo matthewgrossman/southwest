@@ -46,12 +46,10 @@ def check_in(driver: webdriver) -> None:
         data = config[field]
         driver.find_element_by_xpath(xpath).send_keys(data)
 
-    retrieve_res_field = driver.find_element_by_xpath(FIELD_XPATHS[Fields.RetrieveRes])
-    retrieve_res_field.click()
+    driver.find_element_by_xpath(FIELD_XPATHS[Fields.RetrieveRes]).click()
 
     # after clicking "Retrieve Reservation", implicitly wait for confirm button
-    check_in_field = driver.find_element_by_xpath(FIELD_XPATHS[Fields.CheckIn])
-    check_in_field.click()
+    driver.find_element_by_xpath(FIELD_XPATHS[Fields.CheckIn]).click()
 
 
 if __name__ == '__main__':
