@@ -7,11 +7,6 @@ from typing import List
 from typing import NamedTuple
 
 import requests
-ROOT_URL = "https://mobile.southwest.com/api/mobile-air-booking/v1/mobile-air-booking/page/{path}"
-CHECK_IN_URL = ROOT_URL.format(path='check-in')
-VIEW_RESERVATION_URL = ROOT_URL.format(path='view-reservation')
-URL_ARGS = "/{confirmation_num}?first-name={first_name}&last-name={last_name}"
-API_KEY = "l7xx0a43088fe6254712b10787646d1b298e"
 
 
 class FlightInfo(NamedTuple):
@@ -35,21 +30,25 @@ class FlightInfo(NamedTuple):
 
 class SouthwestAPI:
     CHECK_IN_TIMEDELTA = datetime.timedelta(days=1)
+    ROOT_URL = "https://mobile.southwest.com/api/mobile-air-booking/v1/mobile-air-booking/page/{path}"
+    CHECK_IN_URL = ROOT_URL.format(path='check-in')
+    VIEW_RESERVATION_URL = ROOT_URL.format(path='view-reservation')
+    SW_API_KEY = "l7xx0a43088fe6254712b10787646d1b298e"
 
     def __init__(self, confirmation_num: str, first_name: str, last_name: str) -> None:
 
-        self._url_args = URL_ARGS.format(
+        self._url_args = "/{confirmation_num}?first-name={first_name}&last-name={last_name}".format(
             confirmation_num=confirmation_num,
             first_name=first_name,
             last_name=last_name
         )
-        self._view_reservation_url = VIEW_RESERVATION_URL + self._url_args
+        self._view_reservation_url = self.VIEW_RESERVATION_URL + self._url_args
 
-    def _request(self, url: str) -> requests.Response:
-        return requests.get(url, headers={'x-api-key': API_KEY})
+    def _request(self, url: str) -> Dict[str, Any]:
+        return requests.get(url, headers={'x-api-key': self.SW_API_KEY}).json()
 
     def get_reservation_info(self) -> List[FlightInfo]:
-        data = self._request(self._view_reservation_url).json()
+        data = self._request(self._view_reservation_url)
         flight_info_dicts = data['viewReservationViewPage']['shareDetails']['flightInfo']
         return [FlightInfo.from_flight_info_dict(fid) for fid in flight_info_dicts]
 
