@@ -12,7 +12,7 @@ class Actions:
 @click.option('-c', '--confirmation-num', required=True, help='flight confirmation number (e.g. LFKWNT)')
 @click.option('-f', '--first-name', required=True, help='first name (e.g. John)')
 @click.option('-l', '--last-name', required=True, help='last name (e.g. Smith)')
-def cli(action: Actions, confirmation_num: str, first_name: str, last_name: str) -> None:
+def cli(action: str, confirmation_num: str, first_name: str, last_name: str) -> None:
     southwest = Southwest(confirmation_num=confirmation_num, first_name=first_name, last_name=last_name)
     if action == Actions.CHECK_IN:
         southwest.check_in()
