@@ -8,6 +8,8 @@ from typing import NamedTuple
 
 import requests
 
+import utils
+
 
 class FlightInfo(NamedTuple):
     title: str
@@ -30,9 +32,9 @@ class FlightInfo(NamedTuple):
 
 class SouthwestAPI:
     CHECK_IN_TIMEDELTA = datetime.timedelta(days=1)
-    ROOT_URL = "https://mobile.southwest.com/api/mobile-air-booking/v1/mobile-air-booking/page/{path}"
-    CHECK_IN_URL = ROOT_URL.format(path='check-in')
-    VIEW_RESERVATION_URL = ROOT_URL.format(path='view-reservation')
+    ROOT_URL = "https://mobile.southwest.com/api/mobile-air-{verb}/v1/mobile-air-{verb}/page/{path}"
+    CHECK_IN_URL = ROOT_URL.format(verb="operations", path='check-in')
+    VIEW_RESERVATION_URL = ROOT_URL.format(verb="booking", path='view-reservation')
     SW_API_KEY = "l7xx0a43088fe6254712b10787646d1b298e"
 
     def __init__(self, confirmation_num: str, first_name: str, last_name: str) -> None:
@@ -43,6 +45,7 @@ class SouthwestAPI:
             last_name=last_name
         )
         self._view_reservation_url = self.VIEW_RESERVATION_URL + self._url_args
+        self._check_in_url = self.CHECK_IN_URL + self._url_args
 
     def _request(self, url: str) -> Dict[str, Any]:
         return requests.get(url, headers={'x-api-key': self.SW_API_KEY}).json()
@@ -62,7 +65,9 @@ class SouthwestAPI:
         time.sleep((check_in_dt - now).total_seconds())
         self.check_in()
 
+    @utils.retry(Exception)
     def check_in(self) -> None:
+        self._request(self._check_in_url)
         pass
 
 
