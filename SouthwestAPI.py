@@ -30,10 +30,18 @@ class FlightInfo(NamedTuple):
         return f"{self.title}, {self.departure_dt}, {self.arrival_dt}"
 
 
+class IneligibleToCheckinError(Exception):
+    pass
+
+
+class Errors:
+    BEFORE_CHECKIN_ERROR = 'ERROR__AIR_TRAVEL__BEFORE_CHECKIN_WINDOW'
+
+
 class SouthwestAPI:
-    CHECK_IN_TIMEDELTA = datetime.timedelta(days=1)
+    CHECKIN_TIMEDELTA = datetime.timedelta(days=1)
     ROOT_URL = "https://mobile.southwest.com/api/mobile-air-{verb}/v1/mobile-air-{verb}/page/{path}"
-    CHECK_IN_URL = ROOT_URL.format(verb="operations", path='check-in')
+    CHECKIN_URL = ROOT_URL.format(verb="operations", path='check-in')
     VIEW_RESERVATION_URL = ROOT_URL.format(verb="booking", path='view-reservation')
     SW_API_KEY = "l7xx0a43088fe6254712b10787646d1b298e"
 
@@ -45,13 +53,13 @@ class SouthwestAPI:
             last_name=last_name
         )
         self._view_reservation_url = self.VIEW_RESERVATION_URL + self._url_args
-        self._check_in_url = self.CHECK_IN_URL + self._url_args
+        self._checkin_url = self.CHECKIN_URL + self._url_args
 
-    def _request(self, url: str) -> Dict[str, Any]:
-        return requests.get(url, headers={'x-api-key': self.SW_API_KEY}).json()
+    def _request(self, url: str) -> requests.Response:
+        return requests.get(url, headers={'x-api-key': self.SW_API_KEY})
 
     def get_reservation_info(self) -> List[FlightInfo]:
-        data = self._request(self._view_reservation_url)
+        data = self._request(self._view_reservation_url).json()
         flight_info_dicts = data['viewReservationViewPage']['shareDetails']['flightInfo']
         return [FlightInfo.from_flight_info_dict(fid) for fid in flight_info_dicts]
 
@@ -59,16 +67,20 @@ class SouthwestAPI:
         flight_infos = self.get_reservation_info()
         now = datetime.datetime.now(timezone.utc)
         next_flight = next(f for f in flight_infos if f.departure_dt > now)
-        check_in_dt = next_flight.departure_dt - self.CHECK_IN_TIMEDELTA
+        checkin_dt = next_flight.departure_dt - self.CHECKIN_TIMEDELTA
         print(next_flight)
-        print(f"Scheduling check-in for: {check_in_dt}")
-        time.sleep((check_in_dt - now).total_seconds())
-        self.check_in()
+        print(f"Scheduling check-in for: {checkin_dt}")
+        time.sleep((checkin_dt - now).total_seconds())
+        self.checkin()
 
-    @utils.retry(Exception)
-    def check_in(self) -> None:
-        self._request(self._check_in_url)
-        pass
+    @utils.retry([IneligibleToCheckinError])
+    def checkin(self) -> None:
+        resp = self._request(self._checkin_url)
+        data = resp.json()
+        if not resp.ok:
+            if data.get('messageKey') == Errors.BEFORE_CHECKIN_ERROR:
+                raise IneligibleToCheckinError
+            raise Exception(f"Unknown error: {data}")
 
 
 if __name__ == '__main__':
@@ -79,4 +91,4 @@ if __name__ == '__main__':
     }
 
     sw_api = SouthwestAPI(**config)
-    sw_api.schedule()
+    sw_api.checkin()
