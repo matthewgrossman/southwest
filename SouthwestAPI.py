@@ -104,9 +104,9 @@ class SouthwestAPI:
 
 if __name__ == '__main__':
     config = {
-        'confirmation_num': 'KXLIFL',
-        'first_name': 'Leah',
-        'last_name': 'Schatz'
+        'confirmation_num': 'TKVCKG',
+        'first_name': 'Matthew',
+        'last_name': 'Grossman'
     }
 
     sw_api = SouthwestAPI(**config)
