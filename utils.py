@@ -18,8 +18,9 @@ def retry(e: List[Type[Exception]], count: int = 5, delay_s: int = 5) -> Callabl
             for i in range(count):
                 try:
                     return func(*args, **kwargs)
-                except e:
+                except tuple(e):
                     time.sleep(delay_s)
+                    print(f'retrying, attempt {i}')
             return func(*args, **kwargs)
         return cast(F, decorated)
     return decorator

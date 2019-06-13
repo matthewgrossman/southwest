@@ -31,12 +31,28 @@ class FlightInfo(NamedTuple):
         return f"{self.title}, {self.departure_dt}, {self.arrival_dt}"
 
 
+class CheckedInFlightInfo(NamedTuple):
+    seat: str
+    has_precheck: bool
+
+    @classmethod
+    def from_checked_in_flight_dict(cls, checked_in_flight_dict: Dict[str, Any]) -> 'CheckedInFlightInfo':
+        flight = next(iter(checked_in_flight_dict['checkInConfirmationPage']['flights']))
+        passenger = next(iter(flight['passengers']))
+        seat = passenger["boardingGroup"] + passenger["boardingPosition"]
+        return cls(
+            seat=seat,
+            has_precheck=passenger['hasPrecheck']
+        )
+
+
 class IneligibleToCheckinError(Exception):
     pass
 
 
 class Errors:
     BEFORE_CHECKIN_ERROR = 'ERROR__AIR_TRAVEL__BEFORE_CHECKIN_WINDOW'
+    AIR_TRAVEL_NOT_OPEN = 'ERROR__AIR_TRAVEL__NOT_OPEN'
 
 
 class SouthwestAPI:
@@ -72,7 +88,7 @@ class SouthwestAPI:
         checkin_dt = next_flight.departure_dt - self.CHECKIN_TIMEDELTA
         print(next_flight)
         print(f"Scheduling check-in for: {checkin_dt}")
-        time.sleep((checkin_dt - now).total_seconds())
+        time.sleep(max(0, (checkin_dt - now).total_seconds()))
         self.checkin()
 
     @utils.retry([IneligibleToCheckinError])
@@ -80,14 +96,18 @@ class SouthwestAPI:
         resp = self._checkin_get()
         data = resp.json()
         if not resp.ok:
-            if data.get('messageKey') == Errors.BEFORE_CHECKIN_ERROR:
-                raise IneligibleToCheckinError
+            if data.get('messageKey') in (Errors.BEFORE_CHECKIN_ERROR, Errors.AIR_TRAVEL_NOT_OPEN):
+                raise IneligibleToCheckinError("Attempted checkin too early")
             raise Exception(f"Unknown error: {data}")
 
         check_in_token = data['checkInSessionToken']
         resp = self._checkin_post(check_in_token=check_in_token)
         if not resp.ok:
             raise Exception(f"Unknown error: {resp.json()}")
+        print("\nSuccess!")
+
+        checked_in_flight_info = CheckedInFlightInfo.from_checked_in_flight_dict(resp.json())
+        print(checked_in_flight_info)
 
     def _checkin_get(self) -> requests.Response:
         return self._req_session.get(url=self._checkin_get_url)
@@ -99,7 +119,7 @@ class SouthwestAPI:
             'lastName': self._last_name,
             'recordLocator': self._confirmation_num,
         }
-        return self._req_session.post(url=self._checkin_post_url, data=data)
+        return self._req_session.post(url=self._checkin_post_url, json=data)
 
 
 if __name__ == '__main__':
@@ -110,4 +130,4 @@ if __name__ == '__main__':
     }
 
     sw_api = SouthwestAPI(**config)
-    sw_api.checkin()
+    sw_api.schedule()
