@@ -45,6 +45,10 @@ class CheckedInFlightInfo(NamedTuple):
             has_precheck=passenger['hasPrecheck']
         )
 
+    def __str__(self) -> str:
+        precheck_str = 'with' if self.has_precheck else 'without'
+        return f"Seat {self.seat}, {precheck_str} precheck"
+
 
 class IneligibleToCheckinError(Exception):
     pass
