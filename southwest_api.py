@@ -1,3 +1,4 @@
+import sched
 import datetime
 import time
 from datetime import timezone
@@ -80,6 +81,8 @@ class SouthwestAPI:
         self._req_session = Session()
         self._req_session.headers['x-api-key'] = self.SW_API_KEY
 
+        self._scheduler = sched.scheduler(time.time)
+
     def get_reservation_info(self) -> List[FlightInfo]:
         data = self._req_session.get(url=self._view_reservation_url).json()
         flight_info_dicts = data['viewReservationViewPage']['shareDetails']['flightInfo']
@@ -91,9 +94,10 @@ class SouthwestAPI:
         next_flight = next(f for f in flight_infos if f.departure_dt > now)
         checkin_dt = next_flight.departure_dt - self.CHECKIN_TIMEDELTA
         print(next_flight)
+
         print(f"Scheduling check-in for: {checkin_dt}")
-        time.sleep(max(0, (checkin_dt - now).total_seconds()))
-        self.checkin()
+        self._scheduler.enterabs(checkin_dt.timestamp(), 1, self.checkin)
+        self._scheduler.run()
 
     @utils.retry([IneligibleToCheckinError])
     def checkin(self) -> None:
