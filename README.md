@@ -1,7 +1,7 @@
 # Summary
-This project is meant to automate signing into your southwest flight. It was created by examining the HTTP requests that the [mobile site](https://mobile.southwest.com/check-in) make to check into your flight. The main source that does this can be found in [southwest_api.py](https://github.com/matthewgrossman/southwest/blob/master/southwest_api.py). 
+This project is meant to automate signing into your southwest flight. It was created by examining the HTTP requests that the [mobile site](https://mobile.southwest.com/check-in) makes to check into your flight. The main source that does this can be found in [`southwest_api.py`](https://github.com/matthewgrossman/southwest/blob/master/southwest_api.py).
 
-There is another file [southwest.py](https://github.com/matthewgrossman/southwest/blob/master/southwest.py#L12) that attempts to sign in by interacting with a browser. That code isn't currently functional, though you feel free to browse it to see some [selenium](https://selenium-python.readthedocs.io/) usages.
+There is another file [`southwest.py`](https://github.com/matthewgrossman/southwest/blob/master/southwest.py#L12) that attempts to sign in by interacting with a browser. That code isn't currently functional, though you feel free to browse it to see some [`selenium`](https://selenium-python.readthedocs.io/) usages.
 
 # Usage
 1. Download and install dependencies
