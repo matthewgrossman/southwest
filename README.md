@@ -1,6 +1,8 @@
 # How to use
-1. Install dependencies
+1. Download and install dependencies
     ```shell
+    $ git clone https://github.com/matthewgrossman/southwest.git
+    $ cd southwest
     $ python3 -m venv venv
     $ source venv/bin/activate
     $ pip install -r requirements.txt
