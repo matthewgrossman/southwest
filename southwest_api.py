@@ -56,8 +56,9 @@ class IneligibleToCheckinError(Exception):
 
 
 class Errors:
-    BEFORE_CHECKIN_ERROR = 'ERROR__AIR_TRAVEL__BEFORE_CHECKIN_WINDOW'
+    BEFORE_CHECKIN = 'ERROR__AIR_TRAVEL__BEFORE_CHECKIN_WINDOW'
     AIR_TRAVEL_NOT_OPEN = 'ERROR__AIR_TRAVEL__NOT_OPEN'
+    RECORD_NOT_FOUND = 'ERROR__AIR_RESERVATION__RECORD_LOCATOR_NOT_FOUND'
 
 
 class SouthwestAPI:
@@ -84,7 +85,13 @@ class SouthwestAPI:
         self._scheduler = sched.scheduler(time.time)
 
     def get_reservation_info(self) -> List[FlightInfo]:
-        data = self._req_session.get(url=self._view_reservation_url).json()
+        resp = self._req_session.get(url=self._view_reservation_url)
+        data = resp.json()
+        if not resp.ok:
+            if data.get('messageKey') in (Errors.RECORD_NOT_FOUND):
+                raise Exception('Could not find flight information, please confirm name and confirmation number')
+            raise Exception(f"Unknown error: {data}")
+
         flight_info_dicts = data['viewReservationViewPage']['shareDetails']['flightInfo']
         return [FlightInfo.from_flight_info_dict(fid) for fid in flight_info_dicts]
 
@@ -104,7 +111,7 @@ class SouthwestAPI:
         resp = self._checkin_get()
         data = resp.json()
         if not resp.ok:
-            if data.get('messageKey') in (Errors.BEFORE_CHECKIN_ERROR, Errors.AIR_TRAVEL_NOT_OPEN):
+            if data.get('messageKey') in (Errors.BEFORE_CHECKIN, Errors.AIR_TRAVEL_NOT_OPEN):
                 raise IneligibleToCheckinError("Attempted checkin too early")
             raise Exception(f"Unknown error: {data}")
 
