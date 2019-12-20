@@ -11,7 +11,7 @@ from typing import TypeVar
 F = TypeVar('F', bound=Callable[..., Any])
 
 
-def retry(e: List[Type[Exception]], count: int = 5, delay_s: int = 5) -> Callable[[F], F]:
+def retry(e: List[Type[Exception]], count: int = 10, delay_s: int = 5) -> Callable[[F], F]:
     def decorator(func: F) -> F:
         @wraps(func)
         def decorated(*args, **kwargs):
