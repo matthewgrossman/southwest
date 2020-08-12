@@ -1,5 +1,5 @@
-import sched
 import datetime
+import sched
 import time
 from datetime import timezone
 from typing import Any
@@ -67,6 +67,7 @@ class SouthwestAPI:
     CHECKIN_URL = ROOT_URL.format(verb="operations", path='check-in')
     VIEW_RESERVATION_URL = ROOT_URL.format(verb="booking", path='view-reservation')
     SW_API_KEY = "l7xx0a43088fe6254712b10787646d1b298e"
+    SW_CHANNEL_ID = "MWEB"
 
     def __init__(self, confirmation_num: str, first_name: str, last_name: str) -> None:
 
@@ -80,7 +81,8 @@ class SouthwestAPI:
         self._checkin_get_url = self.CHECKIN_URL + self._url_args
 
         self._req_session = Session()
-        self._req_session.headers['x-api-key'] = self.SW_API_KEY
+        self._req_session.headers['X-API-Key'] = self.SW_API_KEY
+        self._req_session.headers['X-Channel-ID'] = self.SW_CHANNEL_ID
 
         self._scheduler = sched.scheduler(time.time)
 
@@ -88,7 +90,7 @@ class SouthwestAPI:
         resp = self._req_session.get(url=self._view_reservation_url)
         data = resp.json()
         if not resp.ok:
-            if data.get('messageKey') in (Errors.RECORD_NOT_FOUND):
+            if data.get('messageKey') in [Errors.RECORD_NOT_FOUND]:
                 raise Exception('Could not find flight information, please confirm name and confirmation number')
             raise Exception(f"Unknown error: {data}")
 
@@ -111,7 +113,7 @@ class SouthwestAPI:
         resp = self._checkin_get()
         data = resp.json()
         if not resp.ok:
-            if data.get('messageKey') in (Errors.BEFORE_CHECKIN, Errors.AIR_TRAVEL_NOT_OPEN):
+            if data.get('messageKey') in [Errors.BEFORE_CHECKIN, Errors.AIR_TRAVEL_NOT_OPEN]:
                 raise IneligibleToCheckinError("Attempted checkin too early")
             raise Exception(f"Unknown error: {data}")
 
@@ -140,8 +142,8 @@ class SouthwestAPI:
 if __name__ == '__main__':
     config = {
         'confirmation_num': 'TKVCKG',
-        'first_name': 'Matthew',
-        'last_name': 'Grossman'
+        'first_name': 'John',
+        'last_name': 'Smith'
     }
 
     sw_api = SouthwestAPI(**config)
