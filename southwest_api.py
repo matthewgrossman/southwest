@@ -119,7 +119,7 @@ class SouthwestAPI:
         self._scheduler.enterabs(checkin_dt.timestamp(), 1, self.checkin)
         self._scheduler.run()
 
-    @utils.retry([IneligibleToCheckinError])
+    @utils.retry([IneligibleToCheckinError, Exception])
     def checkin(self) -> None:
         resp = self._checkin_get()
         data = resp.json()
