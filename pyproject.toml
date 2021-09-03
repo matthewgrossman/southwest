@@ -8,6 +8,7 @@ authors = ["Matthew Grossman <matthewryangrossman@gmail.com>"]
 python = "^3.9"
 click = "^7.1.2"
 requests = "^2.24.0"
+selenium-wire = "^4.5.2"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.4"
