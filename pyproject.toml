@@ -11,6 +11,9 @@ requests = "^2.27.1"
 click = "^8.1.2"
 
 [tool.poetry.dev-dependencies]
+black = "^22.3.0"
+reorder-python-imports = "^3.0.1"
+ipdb = "^0.13.9"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
